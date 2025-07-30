@@ -1,0 +1,78 @@
+function S_manual = scattering_transform_optimized_1(x, LUT)
+    % Extract data from loaded LUT
+    phi_fft = gpuArray(LUT.phi_fft); % Move phi_fft to GPU
+    psi1_fft_lut = gpuArray(LUT.psi1_fft_lut); % Move psi1_fft_lut to GPU
+    psi2_fft_lut = gpuArray(LUT.psi2_fft_lut); % Move psi2_fft_lut to GPU
+    scales_1 = LUT.scales_1; % scales_1 stays on CPU since it's just values
+    scales_2 = LUT.scales_2; % scales_2 stays on CPU since it's just values
+    downsample = LUT.downsample; % downsample stays on CPU
+    L_fft = LUT.L; % L_fft stays on CPU
+    N = length(x);
+    L = L_fft;
+
+    % Move input signal to GPU
+    x = gpuArray(single(x)); % Convert and transfer input signal to GPU
+
+    % FFT of the input signal (computed once)
+    x_fft = fft(x, L);
+    phi_fft = reshape(phi_fft, 1, []);
+
+    % 0th-order scattering (keep as-is)
+    S0_full = ifft(x_fft .* phi_fft, 'symmetric');
+    S0_full = S0_full(1:N);
+    S0 = S0_full(1:downsample:end);
+    S0 = reshape(single(S0), 1, []);
+
+    % First-order scattering (lightly optimized)
+    num_s1 = length(scales_1);
+    len_out = length(S0);
+    first_order = zeros(num_s1, len_out, 'single', 'gpuArray');
+    U1_list = zeros(num_s1, N, 'single', 'gpuArray');
+
+    % Precompute psi1_fft as a matrix
+    psi1_fft_all = reshape(psi1_fft_lut, num_s1, []); % No need to move to GPU here since already done
+
+    for i = 1:num_s1
+        psi1_fft = psi1_fft_all(i,:);
+        U1 = abs(ifft(x_fft .* psi1_fft, 'symmetric'));
+        U1 = U1(1:N);
+        U1_list(i,:) = single(U1);
+        U1_fft = fft(U1, L);
+        S1_full = ifft(U1_fft .* phi_fft, 'symmetric');
+        S1 = S1_full(1:N);
+        first_order(i,:) = S1(1:downsample:end);
+    end
+
+    % Precompute valid second-order pairs (optimized search)
+    [i_grid, j_grid] = meshgrid(1:length(scales_1), 1:length(scales_2));
+    valid_mask = log2(scales_2(j_grid) ./ scales_1(i_grid)) >= 1;
+    valid_pairs = [i_grid(valid_mask), j_grid(valid_mask)];
+    num_s2 = size(valid_pairs, 1);
+
+    % Second-order scattering (keep as-is)
+    second_order = zeros(num_s2, len_out, 'single', 'gpuArray');
+    for k = 1:num_s2
+        i = valid_pairs(k,1);
+        j = valid_pairs(k,2);
+        U1 = U1_list(i,:);
+        U1_fft = fft(U1, L);
+        psi2_fft = reshape(psi2_fft_lut(j,:), 1, []);
+        U2 = abs(ifft(U1_fft .* psi2_fft, 'symmetric'));
+        U2 = U2(1:N);
+        U2_fft = fft(U2, L);
+
+        S2_full = ifft(U2_fft .* phi_fft, 'symmetric');
+        S2 = S2_full(1:N);
+        second_order(k,:) = S2(1:downsample:end);
+    end
+
+    % Combine all (keep as-is)
+    S_manual = [S0; first_order; second_order];
+
+    % Normalize (keep as-is)
+    norms = sqrt(sum(S_manual.^2, 2));
+    S_manual = S_manual ./ norms;
+
+    % Move result back to CPU
+    S_manual = gather(S_manual);
+end
