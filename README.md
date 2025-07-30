@@ -1,6 +1,6 @@
 # RF-BASED-DRONE-SURVEILLANCE-SYSTEM-USING-WAVELET-SCATTERING-TRANSFORM
 
-This is my graduation thesis, and it focuses on the use of Wavelet Scattering Transform (WST) for RF signal feature extraction. These features are then used as inputs for classic Machine Learning algorithms: Random Forest and Tree Bagging for Drone classification. I also propose an optimized solution for a real-time algorithm implemented in hardware. The dataset I use is DroneRF, as documented in "*DroneRF dataset: A dataset of drones for RF-based detection, classification and identification*".
+This is my graduation thesis, and it focuses on the use of Wavelet Scattering Transform (WST) for RF signal feature extraction. These features are then used as inputs for classic Machine Learning algorithms: Random Forest and Tree Bagging for Drone classification. I also propose an optimized solution for a real-time algorithm implemented in hardware. The dataset I use is DroneRF, as documented in "*DroneRF dataset: A dataset of drones for RF-based detection, classification and identification*". Details about Wavelet Scattering you can find in "*Deep scattering spectrum*", "*“Understanding deep convolutional networks*", "*“Wavelet Scattering Transform. Mathematical Analysis and Applications to VIRGO Gravitational Waves Data*"
 
 I will outline the main parts of my thesis:
 
@@ -25,4 +25,4 @@ My proposed solution is to design a WST algorithm using lookup tables that store
 One advantage of WST is that many experiments show we can use constant parameters. This is important because hardware algorithms need static, not dynamic, parameters.
 
 ## Note
-For classification: classification.m, signal_split.m, operation_classification 
+For classification: classification.m, signal_split.m, operation_classification.
