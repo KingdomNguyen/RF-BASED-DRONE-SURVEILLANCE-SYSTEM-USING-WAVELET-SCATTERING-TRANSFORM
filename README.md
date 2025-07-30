@@ -23,3 +23,6 @@ On a GTX 1660Ti, it takes around 8 seconds to complete, which is relatively long
 I believe this is only a soft constraint — it doesn’t necessarily need to be 1ms or faster. Less than 1 second should be sufficient.
 My proposed solution is to design a WST algorithm using lookup tables that store pre-calculated values of FFT, the mother wavelet function, etc.
 One advantage of WST is that many experiments show we can use constant parameters. This is important because hardware algorithms need static, not dynamic, parameters.
+
+## Note
+For classification: classification.m, signal_split.m, operation_classification 
