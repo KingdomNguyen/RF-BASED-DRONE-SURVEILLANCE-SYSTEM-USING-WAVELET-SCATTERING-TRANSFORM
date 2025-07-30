@@ -1,8 +1,25 @@
 # RF-BASED-DRONE-SURVEILLANCE-SYSTEM-USING-WAVELET-SCATTERING-TRANSFORM
 
-This is my graduation thesis, and it focus on the use of Wavelet scattering transform (WST) for RF signals's feature extraction and use these features as inputs of classic Machine Learning algorithm: Random Forest and Tree bagging for Drone classification and I also propose an optimized solution for real-time algorithm in hardware. I use DroneRF dataset that is documented in "*DroneRF dataset: A dataset of drones for RF-based detection, classification and identification*". I will outline main parts in my thesis:
-1. Dataset is divided into two types of RF signals: 0-40 MHz and 40-80 MHz. I use WST and ML algorithm for each types and use a decision-making system to decide final prediction.
-2. RF signals from dataset is IF signals which have 10e6 samples. In order to balance global and local features, I use WST for each chunk of the signal that is 2.5e6 in length. After that, I combine results of transform and it becomes feature vector for one signal.
-3. There are 3 tasks: Drone detection, drone classification and drone operation classification. Two first tasks have large enough to use Random Forest as classifier, but drone operation task has lack of data because there are much more classes, so I use Tree Bagging for maximum information that can be learned. (the reason I use Random Forest is that I try some algorithms and this is the best).
-4. We have two models, and in order to decide which classification is correct, I use confidence score. It is a simple thought: both 0-40 MHz and 40-80 MHz carry information about the drone, so 40-80 MHz signals may capture features that 0-40 MHz signals can't and vice versa. Which prediction that has higher score, it will be a final decision. But we may face over-confident problem, and I address that by using weight for each scores.
-5. Complexity of model mostly causes by WST. In GTX 1660Ti, it takes 8 seconds to complete. So this is a little bit long while Drone classification usually need real-time prediction. But I think this is only soft constraint and it's not neccessary 1ms or faster. I think less than 1 second is enough. And my approach is that design WST algorithm that using Looked-up tables that store pre-caculation of FFT, mother Wavelet function, etc. One advantage of WST is that many experiments show that we can use constant parameters for WST. This is important because algorithm for hardware need static, not dynamic parameters.
+This is my graduation thesis, and it focuses on the use of Wavelet Scattering Transform (WST) for RF signal feature extraction. These features are then used as inputs for classic Machine Learning algorithms: Random Forest and Tree Bagging for Drone classification. I also propose an optimized solution for a real-time algorithm implemented in hardware. The dataset I use is DroneRF, as documented in "DroneRF dataset: A dataset of drones for RF-based detection, classification and identification".
+
+I will outline the main parts of my thesis:
+
+1. The dataset is divided into two types of RF signals: 0–40 MHz and 40–80 MHz.
+I apply WST and ML algorithms to each type and use a decision-making system to determine the final prediction.
+
+2. RF signals in the dataset are IF signals with 10⁶ samples.
+To balance global and local features, I apply WST to chunks of the signal (each of length 2.5e6). After transforming each chunk, I combine the results to form the feature vector for one signal.
+
+3. There are three tasks: Drone detection, Drone classification, and Drone operation classification.
+The first two tasks have large enough datasets to use Random Forest as the classifier. However, the drone operation classification task has limited data due to the higher number of classes. Therefore, I use Tree Bagging to maximize the information that can be learned.
+(The reason I use Random Forest is that I tested several algorithms, and it performed the best.)
+
+4. We have two models. To decide which classification is correct, I use a confidence score.
+The idea is simple: both 0–40 MHz and 40–80 MHz signals carry information about the drone. One band may capture features that the other cannot. The prediction with the higher confidence score will be chosen as the final decision.
+However, this approach may face the over-confidence problem, which I address by applying weights to each score.
+
+5. The model’s complexity is mostly caused by WST.
+On a GTX 1660Ti, it takes around 8 seconds to complete, which is relatively long since drone classification often requires real-time prediction.
+I believe this is only a soft constraint — it doesn’t necessarily need to be 1ms or faster. Less than 1 second should be sufficient.
+My proposed solution is to design a WST algorithm using lookup tables that store pre-calculated values of FFT, the mother wavelet function, etc.
+One advantage of WST is that many experiments show we can use constant parameters. This is important because hardware algorithms need static, not dynamic, parameters.
